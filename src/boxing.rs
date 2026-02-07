@@ -41,7 +41,7 @@ impl<T> Box<T> {
                 self.ptr.drop_in_place();
                 self.alloc
                     .borrow_mut()
-                    .release(self.ptr as *mut u8, align_of::<T>());
+                    .release(self.ptr as *mut u8, size_of::<T>(), align_of::<T>());
             };
             self.ptr = null_ptr_mut();
         }

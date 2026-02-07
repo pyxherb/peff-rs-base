@@ -29,9 +29,11 @@ impl<T> List<T> {
     fn dealloc_node(&mut self, node: *mut ListNode<T>) {
         unsafe {
             node.drop_in_place();
-            self.alloc
-                .borrow_mut()
-                .release(node as *mut u8, align_of::<*mut ListNode<T>>());
+            self.alloc.borrow_mut().release(
+                node as *mut u8,
+                size_of::<ListNode<T>>(),
+                align_of::<ListNode<T>>(),
+            );
         }
     }
 
@@ -200,15 +202,15 @@ impl<T> List<T> {
     pub fn begin(&self) -> Iter<'_, T> {
         Iter::new(&self, self.first)
     }
-    
+
     pub fn begin_mut(&mut self) -> MutIter<'_, T> {
         MutIter::new(self, self.first)
     }
-    
+
     pub fn end(&self) -> Iter<'_, T> {
         Iter::new(&self, null_ptr_mut())
     }
-    
+
     pub fn end_mut(&mut self) -> MutIter<'_, T> {
         MutIter::new(self, null_ptr_mut())
     }
@@ -232,6 +234,9 @@ impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
+        if self.node.is_null() {
+            return None;
+        }
         if self.node == self.list.last {
             self.node = null_ptr_mut();
             return None;
@@ -278,6 +283,9 @@ impl<'a, T> Iterator for MutIter<'a, T> {
     type Item = &'a mut T;
 
     fn next(&mut self) -> Option<&'a mut T> {
+        if self.node.is_null() {
+            return None;
+        }
         if self.node == self.list.last {
             self.node = null_ptr_mut();
             return None;

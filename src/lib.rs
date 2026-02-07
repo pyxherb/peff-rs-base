@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 mod alloc;
 mod list;
@@ -6,17 +6,23 @@ mod ptr;
 mod rcobj;
 pub mod boxing;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::{alloc::StdAlloc, list::List};
+
     use super::*;
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        let mut allocator = StdAlloc::new();
+        let mut ls = List::<i32>::new(allocator.into_ptr_mut());
+
+        for i in 1..100 {
+            ls.push_back(i);
+        }
+
+        for i in ls.begin() {
+            println!("{}", i);
+        }
     }
 }
